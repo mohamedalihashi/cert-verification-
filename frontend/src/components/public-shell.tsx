@@ -14,15 +14,9 @@ export function PublicShell({ children }: { children: ReactNode }) {
           <Link href="/" className="shrink-0">
             <PublicBrand compact />
           </Link>
-          <nav className="flex items-center gap-1 text-sm font-medium sm:gap-2">
+          <nav className="flex items-center text-sm font-medium">
             <Link href="/verify" className="rounded-lg px-3 py-2 text-ink hover:bg-[#eef3f8]">
               Verify
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-xl bg-[#1d6fe8] px-4 py-2.5 text-white shadow-sm hover:bg-[#1558c0]"
-            >
-              Staff login
             </Link>
           </nav>
         </div>
