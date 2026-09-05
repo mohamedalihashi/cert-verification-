@@ -72,22 +72,17 @@ export class StudentsController {
       throw new ConflictException('Student ID already exists.');
     }
     const settings = await this.prisma.settings.findUnique({ where: { id: 'default' } });
-    let student = await this.prisma.student.create({
+    if (photo) this.files.validate(photo, 'photo', settings?.maxPhotoMb ?? 5);
+    const student = await this.prisma.student.create({
       data: {
         studentId,
         fullName: body.fullName.trim(),
         gender: body.gender as Gender,
         courseId: body.courseId,
+        photoData: photo?.buffer,
+        photoMimeType: photo?.mimetype,
       },
     });
-    if (photo) {
-      this.files.validate(photo, 'photo', settings?.maxPhotoMb ?? 5);
-      const photoPath = await this.files.save('photo', student.id, photo);
-      student = await this.prisma.student.update({
-        where: { id: student.id },
-        data: { photoPath },
-      });
-    }
     await this.logs.record({
       userId: actor.id,
       userName: actor.name,
@@ -117,11 +112,8 @@ export class StudentsController {
       if (taken) throw new ConflictException('Student ID already exists.');
     }
     const settings = await this.prisma.settings.findUnique({ where: { id: 'default' } });
-    let photoPath = current.photoPath;
     if (photo) {
       this.files.validate(photo, 'photo', settings?.maxPhotoMb ?? 5);
-      await this.files.remove(current.photoPath);
-      photoPath = await this.files.save('photo', id, photo);
     }
     const student = await this.prisma.student.update({
       where: { id },
@@ -130,7 +122,9 @@ export class StudentsController {
         fullName: body.fullName?.trim(),
         gender: body.gender as Gender | undefined,
         courseId: body.courseId,
-        photoPath,
+        ...(photo
+          ? { photoData: photo.buffer, photoMimeType: photo.mimetype, photoPath: null }
+          : {}),
       },
     });
     await this.logs.record({
@@ -155,7 +149,6 @@ export class StudentsController {
     }
     const student = await this.prisma.student.findUnique({ where: { id } });
     if (!student) throw new NotFoundException('Student not found.');
-    await this.files.remove(student.photoPath);
     await this.prisma.student.delete({ where: { id } });
     await this.logs.record({
       userId: actor.id,

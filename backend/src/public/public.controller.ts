@@ -1,7 +1,6 @@
 import { Controller, Get, NotFoundException, Param, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { Public } from '../common/decorators.js';
-import { FilesService } from '../common/files.service.js';
 import { allowVerifyAttempt } from '../common/guards.js';
 import { serializeCertificate, serializeCourse, serializeSettings, serializeStudent } from '../common/serialize.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -9,10 +8,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 @Controller('public')
 @Public()
 export class PublicController {
-  constructor(
-    private prisma: PrismaService,
-    private files: FilesService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   @Get('meta')
   async meta() {
@@ -33,12 +29,10 @@ export class PublicController {
   @Get('verify/:certificateNumber/photo')
   async photo(@Param('certificateNumber') certificateNumber: string, @Res() res: Response) {
     const cert = await this.find(certificateNumber);
-    if (!cert?.student.photoPath) throw new NotFoundException();
-    const buf = await this.files.read(cert.student.photoPath);
-    if (!buf) throw new NotFoundException();
-    res.setHeader('Content-Type', this.guessType(cert.student.photoPath));
+    if (!cert?.student.photoData) throw new NotFoundException();
+    res.setHeader('Content-Type', cert.student.photoMimeType ?? 'image/jpeg');
     res.setHeader('Cache-Control', 'private, max-age=300');
-    res.send(buf);
+    res.send(Buffer.from(cert.student.photoData));
   }
 
   @Get('verify/:certificateNumber')
@@ -74,10 +68,4 @@ export class PublicController {
     });
   }
 
-  private guessType(path: string) {
-    if (path.endsWith('.png')) return 'image/png';
-    if (path.endsWith('.webp')) return 'image/webp';
-    if (path.endsWith('.svg')) return 'image/svg+xml';
-    return 'image/jpeg';
-  }
 }

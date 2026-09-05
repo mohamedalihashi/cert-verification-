@@ -70,6 +70,8 @@ model Student {
   studentId    String        @unique
   fullName     String
   photoPath    String?
+  photoData    Bytes?
+  photoMimeType String?
   gender       Gender
   courseId     String
   course       Course        @relation(fields: [courseId], references: [id])

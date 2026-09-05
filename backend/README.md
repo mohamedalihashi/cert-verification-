@@ -47,4 +47,6 @@ Sample verification: `GET /api/public/verify/CILAN-2026-00452`
 
 Tables created in Supabase: `users`, `courses`, `students`, `certificates`, `activity_logs`, `settings`, `password_resets`.
 
-Certificate files stay in local `uploads/` (private). Public verify never returns the original document.
+Student photos are stored in the Supabase PostgreSQL `students` table so they
+remain available after backend restarts and redeployments. Certificate
+registration stores verification data only; it does not upload documents.

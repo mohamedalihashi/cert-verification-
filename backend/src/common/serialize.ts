@@ -33,7 +33,7 @@ export function serializeStudent(student: Student) {
     id: student.id,
     studentId: student.studentId,
     fullName: student.fullName,
-    photoDataUrl: student.photoPath ? `/api/files/students/${student.id}/photo` : '',
+    photoDataUrl: student.photoData ? `/api/files/students/${student.id}/photo` : '',
     gender: student.gender,
     courseId: student.courseId,
     createdAt: toIso(student.createdAt),
