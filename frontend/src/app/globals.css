@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f9fc;
+  --foreground: #111111;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: #0b1f2c;
+  --color-ink-soft: #123044;
+  --color-teal: #0099e5;
+  --color-teal-dark: #0077b8;
+  --color-gold: #00965e;
+  --color-gold-deep: #007a4c;
+  --color-cream: #f3faf7;
+  --color-paper: #ffffff;
+  --color-line: #d4e4ee;
+  --color-muted: #5a6b75;
+  --color-success: #00965e;
+  --color-danger: #b42318;
+  --color-warn: #b45309;
+  --font-sans: var(--font-source-sans);
+  --font-display: var(--font-source-sans);
+  --font-mono: var(--font-ibm-plex);
+}
+
+* {
+  border-color: var(--color-line);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-source-sans), "Segoe UI", sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-source-sans), "Segoe UI", sans-serif;
+  font-weight: 700;
+}
+
+.font-mono {
+  font-family: var(--font-ibm-plex), ui-monospace, monospace;
+}
+
+::selection {
+  background: #cceeff;
+  color: #0b1f2c;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.55;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: white;
+  }
+}

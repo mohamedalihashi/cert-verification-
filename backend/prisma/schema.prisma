@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  super_admin
+  staff
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
+enum CourseStatus {
+  active
+  inactive
+}
+
+enum Gender {
+  male
+  female
+  other
+}
+
+enum CertificateStatus {
+  valid
+  revoked
+  replaced
+  archived
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  role         UserRole      @default(staff)
+  status       UserStatus    @default(active)
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  certificates Certificate[]
+  logs         ActivityLog[]
+
+  @@map("users")
+}
+
+model Course {
+  id           String        @id @default(cuid())
+  name         String
+  code         String        @unique
+  department   String
+  description  String        @default("")
+  status       CourseStatus  @default(active)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  students     Student[]
+  certificates Certificate[]
+
+  @@map("courses")
+}
+
+model Student {
+  id           String        @id @default(cuid())
+  studentId    String        @unique
+  fullName     String
+  photoPath    String?
+  gender       Gender
+  courseId     String
+  course       Course        @relation(fields: [courseId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  certificates Certificate[]
+
+  @@index([courseId])
+  @@map("students")
+}
+
+model Certificate {
+  id                   String             @id @default(cuid())
+  studentId            String
+  student              Student            @relation(fields: [studentId], references: [id])
+  certificateNumber    String
+  certificateNumberKey String             @unique
+  courseId             String
+  course               Course             @relation(fields: [courseId], references: [id])
+  issueDate            DateTime           @db.Date
+  graduationYear       Int
+  overallResult        String             @default("")
+  grades               Json               @default("[]")
+  fileName             String?
+  fileMimeType         String?
+  fileSize             Int?
+  filePath             String?
+  status               CertificateStatus  @default(valid)
+  notes                String             @default("")
+  createdById          String
+  createdBy            User               @relation(fields: [createdById], references: [id])
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([studentId])
+  @@index([courseId])
+  @@index([status])
+  @@index([graduationYear])
+  @@index([issueDate])
+  @@map("certificates")
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  userName   String
+  action     String
+  recordType String
+  recordId   String
+  ipAddress  String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([recordType])
+  @@map("activity_logs")
+}
+
+model Settings {
+  id              String @id @default("default")
+  schoolName      String
+  schoolShortName String
+  tagline         String
+  address         String
+  phone           String
+  email           String
+  website         String
+  publicBaseUrl   String @default("")
+  maxCertFileMb   Int    @default(8)
+  maxPhotoMb      Int    @default(5)
+
+  @@map("settings")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("password_resets")
+}
